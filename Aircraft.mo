@@ -11,16 +11,14 @@ package Aircraft
     parameter Real controlGain = 500;
     
     //userinput
-    input Real delta;
+    input Real delta;//elevator deflection
     input Real throttle;
     
     //States
     Real v(start=30);
-    Real gamma(start=0);
-    Real theta(start=0);
-    Real alpha;
-    
-    //Intermediate variables
+    Real gamma(start=0);//Flight path angle
+    Real theta(start=0);//Pitch angle
+    Real alpha;//Angle of attack
     Real q(start=0);
   
   equation

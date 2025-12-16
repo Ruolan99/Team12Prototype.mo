@@ -35,22 +35,10 @@ package AircraftSystem
       // Lift coefficient
       parameter Real CD = 0.03;
       // Drag coefficient
-      Real alpha, v, Pitch_rate; // [Degree/Second]
+      Real v;
       // Aircraft velocity [m/s]
       Real Lift, Drag;
-      input Integer phase;
     equation
-      
-      der(alpha) = Pitch_rate;
-      if (phase == 1) and (v < 80) then
-        Pitch_rate = 0;
-      elseif (phase == 1) and (v > 80) then
-        Pitch_rate = 3;
-      elseif phase == 2 then
-        fuel_flow = -landing;
-      else
-        fuel_flow = 0;
-      end if;
       Lift = 0.5*rho*v^2*S*CL;
 // Lift formula
       Drag = 0.5*rho*v^2*S*CD;
@@ -58,28 +46,13 @@ package AircraftSystem
     end Aerodynamics;
 
     model Propulsion
-      parameter Real Tmax = 280000; // [N]
+      parameter Real Tmax = 5000;
       // Maximum thrust [N]
       Real Throttle;
       // 0..1
       Real Thrust;
-      Real Weight = 60000; // [example weight]
-      Real A, V;
-      input Integer phase;
-      
     equation
       Thrust = Throttle*Tmax;
-      A = Thrust/Weight;
-      der(V) = A;
-      if phase == 1 then
-        Throttle = 1;
-      elseif phase == 2 then
-        Throttle = 0.2;
-      elseif phase == 3 then
-        Throttle = 0.1;
-      else
-        A = 0;
-      end if;
     end Propulsion;
 
     model Fuel_tank
@@ -142,7 +115,6 @@ package AircraftSystem
       aero.v = 800;
       prop.Throttle = 0.8;
       fuel.phase = plane_environment_interfaces1.phase;
-      aero.phase = plane_environment_interfaces1.phase;
       cap.passenger = 150;
       cap.cargo = 2000;
     

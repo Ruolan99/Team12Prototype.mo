@@ -7,35 +7,59 @@ package Aircraft
     massModel mass;
     
     // Parameters
-    parameter Real Iy = 30000000;
+  
     parameter Real controlGain = 5000000;
+    parameter Real K_alpha = 1;
+    parameter Real tau_alpha = 10;
+    parameter Real tau_gamma = 10;
     
-    //userinput
-    //input Real delta_degree;//elevator deflection
-    //input Real throttle;
+    //references
+    Real alpha_ref;
+    Real gamma_ref;
+    
+    parameter Real h_switch = 10000;
+    parameter Real alpha_climb  = 7 * Modelica.Constants.pi/180;
+    parameter Real alpha_cruise = 3 * Modelica.Constants.pi/180;
+    parameter Real gamma_climb  = 5 * Modelica.Constants.pi/180;
+    parameter Real gamma_cruise = 0 * Modelica.Constants.pi/180;
+  
     parameter Real delta_degree=10;
-    parameter Real throttle=1;  
+    parameter Real throttle=1;
+    
+    
     //States
     Real v(start=70);
     Real gamma(start=0);//Flight path angle
     Real theta(start=0);//Pitch angle
     Real alpha;//Angle of attack
     Real delta;//elevator deflection
-    Real q(start=0);
+    Real height;
+    Real range;
   
   equation
     aero.v = v;
+    aero.height = height;
     aero.alpha = alpha;
+    aero.gamma = gamma;
+    aero.Weight = mass.Weight;
     prop.throttle = throttle;
     
-    delta = delta_degree * Modelica.Constants.pi/180 * max(0, 1 - (alpha - 10*Modelica.Constants.pi/180) / (5*Modelica.Constants.pi/180));
-    der(q) = (controlGain * delta) / Iy; // pitch acceleration
-    der(theta) = q;                       // integrate pitch rate to get pitch angle
-    alpha = theta - gamma;
+    der(height) = v * sin(gamma);
+    der(range) = v * cos(gamma);
+    
+    alpha_ref = if height < h_switch
+              then alpha_climb
+              else alpha_cruise;
+    der(alpha) = (alpha_ref - alpha) / tau_alpha;
+    
+    gamma_ref = if height < h_switch
+              then gamma_climb
+              else gamma_cruise;
+    der(gamma) = (gamma_ref - gamma) / tau_gamma;
+    
+    delta = K_alpha * (alpha_ref - alpha);
+    theta = alpha + gamma;
   
-  
-    der(v)=(prop.Thrust-aero.Drag-mass.Weight*sin(gamma))/mass.m; //Acceleration
-    der(gamma) = (aero.Lift - mass.Weight*cos(gamma)) / (mass.m*v);
   
 
   end aircraftEquation;
@@ -52,18 +76,25 @@ package Aircraft
   
   model aerodynamics
     parameter Real S = 400;// Wing area [m^2]
-    parameter Real rho = 1.225;// Air density [kg/m^3]
+    Real rho;// Air density [kg/m^3]
     parameter Real CL0 = 0.6;// Lift coefficient when alpha =0
     parameter Real CL_alpha = 4.39;// Lift coefficient for alpha per rad
     parameter Real CD= 0.04;// Drag coefficient
-    input Real v;// Aircraft velocity [m/s]
-    input Real alpha;//angle of attack, should not exceed 15 degrees
+    Real CL;
+    
+    input Real gamma;
+    input Real alpha; 
+    input Real Weight;
+    input Real height;
     output Real Lift;
     output Real Drag;
-    Real CL;
+    output Real v;
   
-  equation
-    CL = CL0 + CL_alpha * alpha;
+  
+  equation 
+    CL = CL0 + CL_alpha * alpha; 
+    v = sqrt(2 * Weight * cos(gamma) / (rho * S * CL));
+    rho = 1.225 * exp(-height/8500);
     Lift=0.5*rho*v^2*S*CL;// Lift formula
     Drag=0.5*rho*v^2*S*CD;// Drag formula
   
@@ -78,22 +109,4 @@ package Aircraft
     Weight=m*g;
   
   end massModel;
-
-model status
-
-  // Submodel instantiation
-  aircraftEquation equa;
-
-  Real height(start=0);
-  Real range(start=0);
-  Real gamma;
-  Real v;
-  
-equation
-  gamma = equa.gamma;
-  v=equa.v;
-  der(height) = v * sin(gamma);
-  der(range) = v * cos(gamma);
-
-end status;
 end Aircraft;

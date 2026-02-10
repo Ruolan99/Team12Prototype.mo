@@ -32,7 +32,7 @@ package Plane234
       kin.Fl = L;
       kin.Ft = -D;
       annotation(
-        Icon(graphics = {Polygon(origin = {0, 2}, fillColor = {255, 255, 0}, fillPattern = FillPattern.Solid, points = {{-38, 2}, {38, 62}, {36, -62}, {38, -60}, {-38, 2}})}));
+        Icon(graphics = {Polygon(origin = {0, 2}, fillColor = {255, 255, 0}, fillPattern = FillPattern.Solid, points = {{-38, 2}, {38, 62}, {36, -62}, {38, -60}, {-38, 2}}), Text(origin = {10, 3}, extent = {{15, -9}, {-15, 9}}, textString = "Wing")}));
     end Wing;
   end Aero;
 
@@ -41,36 +41,38 @@ package Plane234
       Real rate;
       flow Real m_people;
       annotation(
-        Icon(graphics = {Ellipse(origin = {1, 0}, fillColor = {0, 170, 0}, fillPattern = FillPattern.Solid, extent = {{-27, 26}, {27, -26}})}));
+        Icon(graphics = {Ellipse(origin = {-14, 40}, extent = {{-10, 10}, {10, -10}}), Rectangle(origin = {-13, 5}, extent = {{-9, 23}, {9, -23}}), Rectangle(origin = {12, -12}, extent = {{-16, 6}, {16, -6}}), Rectangle(origin = {22, -34}, extent = {{-6, 16}, {6, -16}})}));
     end People;
 
     connector Fuel
       Real rate;
       flow Real m_tank;
       annotation(
-        Icon(graphics = {Ellipse(origin = {1, 0}, fillColor = {255, 170, 0}, fillPattern = FillPattern.Solid, extent = {{-27, 26}, {27, -26}})}));
+        Icon(graphics = {Ellipse(origin = {3, -2},lineColor = {255, 170, 0}, fillColor = {255, 170, 0}, fillPattern = FillPattern.Solid, extent = {{-85, 86}, {85, -86}}), Text(origin = {0, 3}, extent = {{-36, 33}, {36, -33}}, textString = "Fuel")}));
     end Fuel;
 
     model People_mass
       People people annotation(
-        Placement(transformation(origin = {2, 6}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {2, 6}, extent = {{-10, -10}, {10, 10}})));
+        Placement(transformation(origin = {2, 6}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-72, 68}, extent = {{-10, -10}, {10, 10}})));
       parameter Real m_people = 2800;
       //For 40 people
     equation
       people.m_people = -m_people;
       annotation(
-        Icon(graphics = {Ellipse(origin = {-1, 4}, extent = {{-35, 62}, {35, -62}})}));
+        Icon(graphics = {Rectangle(origin = {0, 2}, extent = {{-96, 92}, {96, -92}}), Text(origin = {-54, 19}, extent = {{-24, 17}, {24, -17}}, textString = "40"), Text(origin = {-17, -27}, extent = {{-55, 31}, {55, -31}}, textString = "Passengers")}),
+  Diagram(graphics));
     end People_mass;
 
     model Fuel_mass
       Fuel fuel annotation(
-        Placement(transformation(origin = {2, -14}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {2, -14}, extent = {{-10, -10}, {10, 10}})));
+        Placement(transformation(origin = {2, -14}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-73, 65}, extent = {{-11, -11}, {11, 11}})));
       parameter Real m_tank = 5000;
     equation
       fuel.m_tank = -m_tank;
       annotation(
-        Icon(graphics = {Ellipse(origin = {2, -14}, extent = {{-62, 36}, {62, -36}})}),
-    experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002));
+        Icon(graphics = {Rectangle(origin = {1, -1}, extent = {{-97, 91}, {97, -89}}), Text(origin = {2, 3}, extent = {{-80, 25}, {80, -25}}, textString = "Fuel tank")}),
+    experiment(StartTime = 0, StopTime = 1, Tolerance = 1e-06, Interval = 0.002),
+  Diagram(graphics));
     end Fuel_mass;
 
     model Mass
@@ -130,20 +132,20 @@ package Plane234
       kin.Fl = -B;
       kin.Ft = N;
       annotation(
-        Icon(graphics = {Line(origin = {0, -20}, points = {{-80, 0}, {80, 0}, {80, 0}}), Rectangle(origin = {0, -20}, fillColor = {85, 85, 0}, fillPattern = FillPattern.Horizontal, extent = {{-90, 8}, {90, -8}})}));
+        Icon(graphics = {Line(origin = {0, -20}, points = {{-80, 0}, {80, 0}, {80, 0}}), Rectangle(origin = {0, -20}, fillColor = {85, 85, 0}, fillPattern = FillPattern.Horizontal, extent = {{-90, 8}, {90, -8}}), Text(origin = {-46, -20}, textColor = {255, 255, 255}, extent = {{-24, 4}, {24, -4}}, textString = "Ground")}));
     end Ground;
 
     model Atm
       parameter Real g = 9.80665; 
-  // Gravitational acceleration [m/s^2]
+// Gravitational acceleration [m/s^2]
       parameter Real T0 = 288.15; 
-  // Sea-level standard temperature [K]
+// Sea-level standard temperature [K]
       parameter Real p0 = 101325; 
-  // Sea-level standard pressure [Pa]
+// Sea-level standard pressure [Pa]
       parameter Real L = 0.0065; 
-  // Temperature lapse rate in the troposphere [K/m]
+// Temperature lapse rate in the troposphere [K/m]
       parameter Real R = 287.0; 
-  // Specific gas constant for dry air [J/(kg·K)]
+// Specific gas constant for dry air [J/(kg·K)]
       Real rho; 
       Real T; 
       Real p; 
@@ -153,13 +155,11 @@ package Plane234
         Placement(transformation(origin = {-2, -2}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {-2, -2}, extent = {{-10, -10}, {10, 10}})));
       
     algorithm
-      // ===== ISA temperature model =====
-      T := T0 - L*h; 
-      // ===== ISA pressure model =====
-      p := p0*(T/T0)^(g/(L*R)); 
-      // ===== Air density calculation =====
-      rho := p/(R*T);
     
+// ===== ISA temperature model =====
+      T := T0 - L*h; // ===== ISA pressure model =====
+      p := p0*(T/T0)^(g/(L*R)); // ===== Air density calculation =====
+      rho := p/(R*T);
     equation
       kin.rho = rho;
       kin.Fl = 0;
@@ -167,7 +167,7 @@ package Plane234
       kin.g = g;
     
       annotation(
-        Icon(graphics = {Rectangle(origin = {1, -1}, fillColor = {170, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-91, 53}, {91, -53}})}));
+        Icon(graphics = {Rectangle(origin = {1, -1}, fillColor = {170, 255, 255}, fillPattern = FillPattern.HorizontalCylinder, extent = {{-91, 53}, {91, -53}}), Text(origin = {0, -24}, textColor = {255, 255, 255}, extent = {{-38, 8}, {38, -8}}, textString = "Atmosphere")}));
     end Atm;
   end Env;
 
@@ -186,7 +186,7 @@ package Plane234
     equation
       engCon.Q = Q;
       annotation(
-        Icon(graphics = {Line(origin = {14.0374, 1}, points = {{15.9626, 23}, {-40.0374, -17}, {-42.0374, 25}, {15.9626, -25}, {15.9626, 23}, {41.9626, 21}})}));
+        Icon(graphics = {Line(origin = {14.0374, 1}, points = {{29.9626, 39}, {-58.0374, -41}, {-56.0374, 39}, {29.9626, -39}, {29.9626, 39}, {29.9626, 41}}), Text(origin = {0, -42}, extent = {{-20, 22}, {20, -22}}, textString = "Nozzle")}));
     end Nozzle;
 
     model Eng
@@ -208,7 +208,7 @@ package Plane234
       kin.Fl = T*sin(alpha);
       kin.Ft = T*cos(alpha);
       annotation(
-        Icon(graphics = {Rectangle(origin = {-12, -2}, fillColor = {255, 85, 0}, fillPattern = FillPattern.Vertical, extent = {{-44, 38}, {44, -38}})}));
+        Icon(graphics = {Rectangle(origin = {-2, -4}, fillColor = {255, 85, 0}, fillPattern = FillPattern.Vertical, extent = {{-66, 58}, {66, -58}}), Text(origin = {-6, -32}, extent = {{-36, 14}, {36, -14}}, textString = "Engine")}));
     end Eng;
   end Noz;
 
@@ -223,8 +223,7 @@ package Plane234
       Real x = kin.x;
       Real v = kin.v;
       Real m_lost = kin.m_lost;
-    
-      // Phase tracker (discrete to prevent chattering)
+    // Phase tracker (discrete to prevent chattering)
       discrete Integer phase(start = 1);
       // Constants
       parameter Real kp = 1;
@@ -264,18 +263,17 @@ package Plane234
         phase := 7;
       end when;
     equation
-    // Compute automatic gamma from altitude hold (PD controller, P responds to altitude error, D damps the response)
+// Compute automatic gamma from altitude hold (PD controller, P responds to altitude error, D damps the response)
       gamma_auto = max(gamma_min, min(gamma_max, kp_h*(h_c - h) - kd_h*der(h)));
-    // Choose between altitude hold and manual gamma (P controller)
+// Choose between altitude hold and manual gamma (P controller)
       alpha_cmd = if altitude_hold then kp*(gamma_auto - gamma) else kp*(gamma_c - gamma);
       thr_cmd = kv*(v_c - v);
       theta = alpha + gamma;
-    //first-oder alpha
+//first-oder alpha
       alpha_rate = (min(0.349, max(0, alpha_cmd)) - alpha);
       der(alpha) = max(-alpha_rate_limit, min(alpha_rate_limit, alpha_rate));
       thr = if m_lost > 0 then min(1, max(0, thr_cmd)) else 0;
-      
-    //Feedback
+//Feedback
       kin.gamma = gamma;
       kin.alpha = alpha;
       kin.h_c = h_c;
@@ -283,7 +281,7 @@ package Plane234
       kin.phase = phase;
       kin.Fl = 0;
       kin.Ft = 0;
-    // Phase-based targets
+// Phase-based targets
       if phase == 1 then
         v_c = 0.6*v_t;
         gamma_c = 0*gamma_t;
@@ -337,10 +335,10 @@ package Plane234
       Interfaces.Kin kin annotation(
         Placement(transformation(origin = {0, 10}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {0, 10}, extent = {{-10, -10}, {10, 10}})));
     equation
-    // Kinematics
+// Kinematics
       der(h) = if h > 0 or v*sin(gamma) > 0 then v*sin(gamma) else 0;
       der(x) = v*cos(gamma);
-    // Force balance
+// Force balance
       Ft = -kin.Ft;
       Fl = -kin.Fl;
       if phase == 7 then
@@ -377,13 +375,13 @@ package Plane234
       Body.Mass mass annotation(
         Placement(transformation(origin = {-28, -2}, extent = {{-16, -16}, {16, 16}})));
       Body.People_mass people_mass annotation(
-        Placement(transformation(origin = {-1, -57}, extent = {{-13, -13}, {13, 13}})));
+        Placement(transformation(origin = {-1, -63}, extent = {{-15, -15}, {15, 15}})));
       Body.People_mass people_mass1 annotation(
-        Placement(transformation(origin = {-1, -37}, extent = {{-15, -15}, {15, 15}})));
+        Placement(transformation(origin = {-1, -31}, extent = {{-15, -15}, {15, 15}})));
       Body.Fuel_mass fuel_mass annotation(
-        Placement(transformation(origin = {-58, -54}, extent = {{-22, -22}, {22, 22}})));
+        Placement(transformation(origin = {-65, -61}, extent = {{-15, -15}, {15, 15}})));
       Body.Fuel_mass fuel_mass1 annotation(
-        Placement(transformation(origin = {-58, -36}, extent = {{-22, -22}, {22, 22}})));
+        Placement(transformation(origin = {-65, -29}, extent = {{-15, -15}, {15, 15}})));
       Aero.Wing wing annotation(
         Placement(transformation(origin = {-14, 22}, extent = {{-36, -36}, {36, 36}})));
     equation
@@ -402,15 +400,15 @@ package Plane234
       connect(mass.kin, kinematics.kin) annotation(
         Line(points = {{-29, 5}, {-29, 23}, {-49, 23}}));
       connect(fuel_mass.fuel, mass.fuel) annotation(
-        Line(points = {{-58, -57}, {-58, -57.5}, {-35, -57.5}, {-35, -7}}));
+        Line(points = {{-76, -51}, {-76, -57.5}, {-35, -57.5}, {-35, -7}}));
       connect(fuel_mass1.fuel, mass.fuel) annotation(
-        Line(points = {{-58, -39}, {-35, -39}, {-35, -7}}));
+        Line(points = {{-76, -19}, {-76, -7}, {-35, -7}}));
   connect(ground.kin, kinematics.kin) annotation(
         Line(points = {{-72, -7}, {-72, 24}, {-48, 24}}));
   connect(mass.people, people_mass1.people) annotation(
-        Line(points = {{-20, -6}, {-20, -36}, {0, -36}}));
+        Line(points = {{-20, -6}, {-20, -21}, {-12, -21}}));
   connect(mass.people, people_mass.people) annotation(
-        Line(points = {{-20, -6}, {-20, -56}, {0, -56}}));
+        Line(points = {{-20, -6}, {-20, -53}, {-12, -53}}));
     annotation(
         experiment(StartTime = 0, StopTime = 8000, Tolerance = 1e-06, Interval = 16));
 end example;
